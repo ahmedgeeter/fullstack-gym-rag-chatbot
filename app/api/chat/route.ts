@@ -134,129 +134,42 @@ export async function POST(request: Request) {
       [/bundle|studio setup|home gym/i, "bundles"],
     ];
     const matchedCategory = categoryMap.find(([pattern]) => pattern.test(lower))?.[1];
-    if (wantsCatalog) {
+    let dynamicContext = "";
+    const documents = await loadDocuments();
+    const knowledgeContext = documents.map(doc => `Source: ${doc.title}\n${doc.content}`).join("\n---\n");
+    
+    if (wantsCatalog || wantsRecommendation || matchedCategory) {
       const catalogProducts = await prisma.product.findMany({
-        include: { brand: true, category: true },
+        where: matchedCategory ? { category: { slug: matchedCategory } } : undefined,
+        include: { category: true },
         orderBy: { createdAt: "desc" },
-        take: 12,
+        take: 20,
       });
       if (catalogProducts.length) {
-        const catalogLines = catalogProducts.map(
-          (product, index) =>
-            `${index + 1}. ${product.name} — €${product.price} (${product.category?.name ?? "Equipment"})`
-        );
-        const reply = normalizeReply(
-          `Here are the current equipment names and prices:\n${catalogLines.join("\n")}`
-        );
-        return NextResponse.json({ data: { reply } });
+        dynamicContext += "Related Catalog Products:\n" + catalogProducts.map(p => `- ${p.name} [${p.category?.name}]: €${p.price}. ${p.shortDescription}. Warranty: ${p.warrantyMonths} months.`).join("\n") + "\n\n";
       }
     }
 
-    if (wantsShipping) {
-      const shippingMethods = await prisma.shippingMethod.findMany({
-        orderBy: { sortOrder: "asc" },
-      });
-      const returnsPolicy = await loadPolicySnippet(
-        "shipping-returns.md",
-        "Returns are accepted within 30 days for unused equipment in original packaging."
-      );
-      const lines = ["Delivery & returns overview:", returnsPolicy];
+    if (wantsShipping || wantsWarranty) {
+      const shippingMethods = await prisma.shippingMethod.findMany({ orderBy: { sortOrder: "asc" } });
       if (shippingMethods.length) {
-        lines.push(
-          ...shippingMethods.map(
-            (method, index) =>
-              `${index + 1}. ${method.name} — €${method.price} (ETA ${method.etaDays} days)`
-          )
-        );
-      }
-      const reply = normalizeReply(lines.join("\n"));
-      return NextResponse.json({ data: { reply } });
-    }
-
-    if (wantsWarranty) {
-      const warrantyPolicy = await loadPolicySnippet(
-        "warranty-care.md",
-        "Most equipment includes a 24‑month warranty with coverage for manufacturing defects."
-      );
-      const warrantyProduct = matchedCategory
-        ? await prisma.product.findMany({
-            where: { category: { slug: matchedCategory } },
-            orderBy: { createdAt: "desc" },
-            take: 3,
-          })
-        : [];
-      const lines = ["Warranty overview:", warrantyPolicy];
-      if (warrantyProduct.length) {
-        lines.push(
-          ...warrantyProduct.map(
-            (product, index) =>
-              `${index + 1}. ${product.name} — ${product.warrantyMonths ?? 24} months`
-          )
-        );
-      }
-      const reply = normalizeReply(lines.join("\n"));
-      return NextResponse.json({ data: { reply } });
-    }
-
-    if (wantsRecommendation || matchedCategory) {
-      const recommended = await prisma.product.findMany({
-        where: matchedCategory ? { category: { slug: matchedCategory } } : undefined,
-        orderBy: { createdAt: "desc" },
-        take: 4,
-      });
-      if (recommended.length) {
-        const lines = ["Recommended options:",
-          ...recommended.map(
-            (product, index) =>
-              `${index + 1}. ${product.name} — €${product.price} (${product.shortDescription ?? "Premium build"})`
-          ),
-        ];
-        const reply = normalizeReply(lines.join("\n"));
-        return NextResponse.json({ data: { reply } });
+        dynamicContext += "Shipping Methods:\n" + shippingMethods.map(m => `- ${m.name}: €${m.price} (ETA ${m.etaDays} days)`).join("\n") + "\n\n";
       }
     }
-
-    const queryEmbedding = await embedText(latest);
-    const documents = await loadDocuments();
-    const minScore = Number(process.env.RAG_MIN_SCORE ?? 0.2);
-    const matches = getTopMatchesWithScore(
-      queryEmbedding,
-      documents,
-      8
-    );
-    const prefersSupport = supportKeywords.some((keyword) =>
-      latest.toLowerCase().includes(keyword)
-    );
-    const scoredDocs = matches.filter((match) => match.score >= minScore);
-    const fallbackDocs = scoredDocs.length ? scoredDocs : matches;
-    const supportDocs = prefersSupport
-      ? fallbackDocs.filter((match) => isSupportSource(match.doc.source))
-      : fallbackDocs;
-    const topDocs = (supportDocs.length ? supportDocs : fallbackDocs).map((match) => match.doc);
-
-    const contextChunks = topDocs.map((doc) => `Source: ${doc.title}\n${doc.content}`);
-
-    const context = contextChunks.length
-      ? contextChunks.join("\n---\n").slice(0, 4000)
-      : "No relevant context found.";
+    
+    const context = `Store Policies & Database Info:\n${knowledgeContext}\n\n${dynamicContext}`.slice(0, 6000);
 
     if (!groqApiKey) {
-      const fallbackLines = topDocs.slice(0, 4).map((doc, index) => `${index + 1}. ${doc.title}`);
-      const reply = normalizeReply(
-        fallbackLines.length
-          ? `Here is what I can confirm right now:\n${fallbackLines.join("\n")}`
-          : "Please ask about equipment, delivery, returns, or warranties so I can help immediately."
-      );
-      return NextResponse.json({ data: { reply } });
+      return NextResponse.json({ data: { reply: "I am functioning in fallback mode since no API key is available. However, I am ready!" } });
     }
 
     const payload = {
       model: process.env.GROQ_CHAT_MODEL ?? "llama-3.1-8b-instant",
-      temperature: 0.3,
+      temperature: 0.2,
       messages: [
         { role: "system", content: buildSystemPrompt() },
-        { role: "system", content: "Format every sentence on its own line." },
-        { role: "system", content: `Context:\n${context}` },
+        { role: "system", content: "You are Coremont Assist, an elite AI for a premium fitness brand. Answer queries accurately, intelligently, and elegantly. Use bullet points and paragraphs to organize your responses beautifully. Never say 'Based on the context', just answer naturally like a human expert. Impress the user with your precision." },
+        { role: "system", content: `Context Data:\n${context}` },
         ...messages,
       ],
     };
@@ -271,7 +184,7 @@ export async function POST(request: Request) {
     });
 
     if (!response.ok) {
-      const fallbackLines = topDocs.slice(0, 4).map((doc, index) => `${index + 1}. ${doc.title}`);
+      const fallbackLines = documents.slice(0, 4).map((doc, index) => `${index + 1}. ${doc.title}`);
       const reply = normalizeReply(
         fallbackLines.length
           ? `Here is what I can confirm right now:\n${fallbackLines.join("\n")}`
@@ -286,7 +199,7 @@ export async function POST(request: Request) {
 
     let reply = normalizeReply(data.choices?.[0]?.message?.content ?? "");
     if (!reply) {
-      const fallbackLines = topDocs.slice(0, 4).map((doc, index) => `${index + 1}. ${doc.title}`);
+      const fallbackLines = documents.slice(0, 4).map((doc, index) => `${index + 1}. ${doc.title}`);
       reply = normalizeReply(
         fallbackLines.length
           ? `Here is what I can confirm right now:\n${fallbackLines.join("\n")}`
