@@ -7,7 +7,7 @@ import { createOrderFromCart } from "@/lib/services/checkout";
 export async function POST(request: Request) {
   try {
     const payload = checkoutSchema.parse(await request.json());
-    const token = getCartToken();
+    const token = await getCartToken();
 
     if (!token) {
       return respondError({ message: "Cart token not found.", code: "CART_NOT_FOUND" }, 400);

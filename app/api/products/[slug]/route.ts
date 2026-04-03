@@ -2,11 +2,12 @@ import { getProductBySlug } from "@/lib/repositories/catalog";
 import { respondSuccess, respondError } from "@/lib/api/response";
 import { handleApiError } from "@/lib/api/errors";
 
-type RouteParams = { params: { slug: string } };
+type RouteParams = { params: Promise<{ slug: string }> };
 
 export async function GET(_: Request, { params }: RouteParams) {
   try {
-    const product = await getProductBySlug(params.slug);
+    const { slug } = await params;
+    const product = await getProductBySlug(slug);
 
     if (!product) {
       return respondError({ message: "Product not found.", code: "NOT_FOUND" }, 404);

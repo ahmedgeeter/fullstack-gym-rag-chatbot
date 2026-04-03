@@ -1525,8 +1525,8 @@ async function main() {
         material: product.material,
         maxUserWeight: product.maxUserWeight,
         assemblyRequired: product.assemblyRequired,
-        footprintTag: product.footprintTag,
-        usageType: product.usageType,
+        footprintTag: product.footprintTag as any,
+        usageType: product.usageType as any,
         lengthCm: product.lengthCm,
         widthCm: product.widthCm,
         heightCm: product.heightCm,
@@ -1553,7 +1553,7 @@ async function main() {
     });
   }
 
-  const productRecords = (await prisma.product.findMany()) as ProductRecord[];
+  const productRecords = (await prisma.product.findMany()) as unknown as ProductRecord[];
   const productMap = new Map(productRecords.map((product) => [product.slug, product]));
 
   for (const collection of collections) {
@@ -1595,8 +1595,8 @@ async function main() {
 
   await prisma.review.createMany({ data: reviewsData });
 
-  const shippingList = (await prisma.shippingMethod.findMany()) as ShippingMethodRecord[];
-  const paymentList = (await prisma.paymentMethod.findMany()) as PaymentMethodRecord[];
+  const shippingList = (await prisma.shippingMethod.findMany()) as unknown as ShippingMethodRecord[];
+  const paymentList = (await prisma.paymentMethod.findMany()) as unknown as PaymentMethodRecord[];
   const shippingMap = new Map(shippingList.map((method) => [method.name, method]));
   const paymentMap = new Map(paymentList.map((method) => [method.name, method]));
 
@@ -1634,9 +1634,9 @@ async function main() {
         orderNumber: `CM-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
         customerId: customer?.id ?? null,
         guestEmail: order.email,
-        status: order.status,
-        paymentStatus: order.paymentStatus,
-        shippingStatus: order.shippingStatus,
+        status: order.status as any,
+        paymentStatus: order.paymentStatus as any,
+        shippingStatus: order.shippingStatus as any,
         subtotal,
         shippingTotal,
         taxTotal,

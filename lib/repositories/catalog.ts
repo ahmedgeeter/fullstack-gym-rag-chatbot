@@ -140,7 +140,7 @@ export const getProducts = async (query: ProductQuery) => {
     prisma.product.count({ where }),
     prisma.product.findMany({
       where,
-      orderBy,
+      orderBy: orderBy as any,
       skip,
       take: pageSize,
       include: {

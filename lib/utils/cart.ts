@@ -3,8 +3,8 @@ import { randomUUID } from "crypto";
 
 const CART_COOKIE = "coremont_cart";
 
-export const getOrCreateCartToken = () => {
-  const cookieStore = cookies();
+export const getOrCreateCartToken = async () => {
+  const cookieStore = await cookies();
   const existing = cookieStore.get(CART_COOKIE)?.value;
 
   if (existing) {
@@ -22,7 +22,7 @@ export const getOrCreateCartToken = () => {
   return { token, isNew: true };
 };
 
-export const getCartToken = () => {
-  const cookieStore = cookies();
+export const getCartToken = async () => {
+  const cookieStore = await cookies();
   return cookieStore.get(CART_COOKIE)?.value ?? null;
 };

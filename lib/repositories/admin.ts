@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
+import { OrderStatus, PaymentStatus, ShippingStatus, ReviewStatus, Prisma } from "@prisma/client";
 
 export type AdminProductInput = {
   name: string;
@@ -152,7 +153,7 @@ export const updateAdminProduct = async (id: string, payload: Partial<AdminProdu
   const { images, specifications, inventory, tags, ...rest } = payload;
   const data = cleanUndefined({ ...rest, tags, compareAtPrice: rest.compareAtPrice });
 
-  return prisma.$transaction(async (tx: typeof prisma) => {
+  return prisma.$transaction(async (tx) => {
     await tx.product.update({
       where: { id },
       data: {
@@ -265,9 +266,9 @@ export const getAdminOrderById = async (id: string) => {
 export const updateAdminOrder = async (
   id: string,
   payload: {
-    status?: string;
-    paymentStatus?: string;
-    shippingStatus?: string;
+    status?: OrderStatus;
+    paymentStatus?: PaymentStatus;
+    shippingStatus?: ShippingStatus;
   }
 ) => {
   const data = cleanUndefined(payload);
@@ -341,8 +342,8 @@ export const createAdminOrder = async (payload: AdminOrderCreateInput) => {
       currency: "EUR",
       shippingMethodId: shippingMethod?.id,
       paymentMethodId: paymentMethod?.id,
-      shippingAddressSnapshot: payload.shippingAddress,
-      billingAddressSnapshot: payload.billingAddress,
+      shippingAddressSnapshot: payload.shippingAddress as Prisma.InputJsonValue,
+      billingAddressSnapshot: payload.billingAddress as Prisma.InputJsonValue,
       items: {
         create: lineItems.map((item) => ({
           productId: item.product.id,
@@ -351,7 +352,7 @@ export const createAdminOrder = async (payload: AdminOrderCreateInput) => {
           unitPrice: item.unitPrice,
           quantity: item.quantity,
           lineTotal: item.lineTotal,
-          productSnapshot: item.product,
+          productSnapshot: item.product as Prisma.InputJsonValue,
         })),
       },
     },
@@ -412,7 +413,7 @@ export const getAdminReviews = async (filters: { status?: string; productSlug?: 
   });
 };
 
-export const updateAdminReviewStatus = async (id: string, status: string) => {
+export const updateAdminReviewStatus = async (id: string, status: ReviewStatus) => {
   return prisma.review.update({
     where: { id },
     data: { status },

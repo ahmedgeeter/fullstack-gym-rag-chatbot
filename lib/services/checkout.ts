@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
+import { Prisma } from "@prisma/client";
 import { getCartByToken } from "@/lib/repositories/cart";
 
 const toNumber = (value: unknown) => Number(value ?? 0);
@@ -48,8 +49,8 @@ export const createOrderFromCart = async (guestToken: string, payload: {
       currency: cart.currency,
       shippingMethodId: shippingMethod?.id,
       paymentMethodId: paymentMethod?.id,
-      shippingAddressSnapshot: payload.shippingAddress,
-      billingAddressSnapshot: payload.billingAddress,
+      shippingAddressSnapshot: payload.shippingAddress as Prisma.InputJsonValue,
+      billingAddressSnapshot: payload.billingAddress as Prisma.InputJsonValue,
       items: {
         create: cart.items.map((item) => {
           const product = item.product as {
@@ -65,7 +66,7 @@ export const createOrderFromCart = async (guestToken: string, payload: {
             unitPrice: toNumber(item.unitPrice),
             quantity: item.quantity,
             lineTotal: toNumber(item.unitPrice) * item.quantity,
-            productSnapshot: item.product,
+            productSnapshot: item.product as Prisma.InputJsonValue,
           };
         }),
       },

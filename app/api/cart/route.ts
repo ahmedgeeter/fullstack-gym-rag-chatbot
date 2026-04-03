@@ -6,7 +6,7 @@ import { ensureCart, replaceCartItems } from "@/lib/repositories/cart";
 
 export async function POST() {
   try {
-    const { token, isNew } = getOrCreateCartToken();
+    const { token, isNew } = await getOrCreateCartToken();
     const cart = await ensureCart(token);
 
     return respondSuccess(cart, null, isNew ? 201 : 200);
@@ -18,7 +18,7 @@ export async function POST() {
 export async function PATCH(request: Request) {
   try {
     const payload = cartUpdateSchema.parse(await request.json());
-    const { token } = getOrCreateCartToken();
+    const { token } = await getOrCreateCartToken();
     const cart = await replaceCartItems(token, payload.items);
 
     return respondSuccess(cart);
