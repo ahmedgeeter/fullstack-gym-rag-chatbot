@@ -1,3 +1,6 @@
+<img width="1901" height="871" alt="image" src="https://github.com/user-attachments/assets/4768e9a3-7da2-47f3-88a6-a5ed23238d35" />
+<img width="1893" height="867" alt="Screenshot 2026-04-03 153753" src="https://github.com/user-attachments/assets/07d62cdf-7e76-47e2-9124-0b023f930010" />
+
 # Coremont — Premium Fitness Storefront + RAG Assistant
 
 Boutique e-commerce experience for premium gym equipment, backed by a fast RAG assistant with real product data and policy knowledge.
