@@ -82,7 +82,7 @@ export const ChatWidget = () => {
             animate={{ opacity: 1, y: 0, scale: 1, rotateX: 0, filter: "blur(0px)" }}
             exit={{ opacity: 0, y: 30, scale: 0.9, filter: "blur(10px)", transition: { duration: 0.25, ease: "easeInOut" } }}
             transition={{ type: "spring", bounce: 0.4, duration: 0.7 }}
-            className="relative flex h-[620px] w-[380px] flex-col overflow-hidden rounded-[32px] border border-white/20 bg-surface/50 backdrop-blur-3xl shadow-[0_40px_100px_rgba(0,0,0,0.3)] origin-bottom-right"
+            className="relative flex h-[540px] w-[350px] flex-col overflow-hidden rounded-[28px] border border-white/20 bg-surface/50 backdrop-blur-3xl shadow-[0_40px_100px_rgba(0,0,0,0.3)] origin-bottom-right"
           >
             {/* Ambient Background Gradient */}
             <div className="absolute inset-0 bg-gradient-to-b from-accent/5 via-transparent to-surface/90 pointer-events-none -z-10" />
@@ -143,7 +143,7 @@ export const ChatWidget = () => {
                       </div>
                       <div
                         className={cn(
-                          "max-w-[75%] rounded-3xl px-5 py-3.5 text-[14px] leading-relaxed shadow-sm whitespace-pre-wrap",
+                          "max-w-[75%] rounded-3xl px-4 py-3 text-[13px] leading-relaxed shadow-sm whitespace-pre-wrap",
                           message.role === "user"
                             ? "bg-gradient-to-br from-accent to-[#e67e22] text-white rounded-tr-sm shadow-accent/20"
                             : "bg-surface/80 border border-white/5 text-foreground rounded-tl-sm backdrop-blur-md"
@@ -163,7 +163,7 @@ export const ChatWidget = () => {
                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 shadow-md">
                         <Loader2 className="h-4 w-4 animate-spin text-accent" />
                       </div>
-                      <div className="flex h-[48px] w-16 items-center justify-center rounded-3xl rounded-tl-sm bg-surface/80 border border-white/5 backdrop-blur-md">
+                      <div className="flex h-[42px] w-14 items-center justify-center rounded-3xl rounded-tl-sm bg-surface/80 border border-white/5 backdrop-blur-md">
                         <motion.div className="flex gap-1">
                           {[0, 1, 2].map((i) => (
                             <motion.span
@@ -182,21 +182,21 @@ export const ChatWidget = () => {
             </div>
 
             {/* Input Area */}
-            <div className="border-t border-white/10 bg-surface/80 p-5 backdrop-blur-3xl z-10">
+            <div className="border-t border-white/10 bg-surface/80 p-4 backdrop-blur-3xl z-10">
               <div className="relative flex items-center">
                 <input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSend()}
                   placeholder="Message Intelligence..."
-                  className="h-14 w-full rounded-full border border-white/10 bg-black/5 pl-6 pr-14 text-[14px] text-foreground shadow-inner focus:border-accent/50 focus:bg-white/5 focus:ring-4 focus:ring-accent/10 focus:outline-none transition-all duration-300 placeholder:text-muted-foreground/60 caret-accent"
+                  className="h-12 w-full rounded-full border border-white/10 bg-black/5 pl-5 pr-12 text-[13px] text-foreground shadow-inner focus:border-accent/50 focus:bg-white/5 focus:ring-4 focus:ring-accent/10 focus:outline-none transition-all duration-300 placeholder:text-muted-foreground/60 caret-accent"
                 />
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleSend}
                   disabled={!canSend}
-                  className="absolute right-2 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-accent to-[#d35400] text-white shadow-lg shadow-accent/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="absolute right-1.5 flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-accent to-[#d35400] text-white shadow-lg shadow-accent/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Send className="h-4 w-4 ml-0.5" />
                 </motion.button>
@@ -210,7 +210,7 @@ export const ChatWidget = () => {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setOpen(!open)}
-        className="relative flex h-[72px] w-[72px] items-center justify-center overflow-hidden bg-gradient-to-br from-accent via-[#e67e22] to-[#d35400] shadow-[0_15px_40px_rgba(230,126,34,0.4)] z-[9999] jelly-blob-btn"
+        className="relative flex h-[64px] w-[64px] items-center justify-center overflow-hidden bg-gradient-to-br from-accent via-[#e67e22] to-[#d35400] shadow-[0_15px_40px_rgba(230,126,34,0.4)] z-[9999] jelly-blob-btn"
       >
         <motion.div
           animate={{ rotate: 360 }}
@@ -229,7 +229,7 @@ export const ChatWidget = () => {
               transition={{ duration: 0.2 }}
               className="relative z-10 text-white"
             >
-              <X className="h-8 w-8 drop-shadow-md" />
+              <X className="h-7 w-7 drop-shadow-md" />
             </motion.div>
           ) : (
             <motion.div
@@ -240,7 +240,7 @@ export const ChatWidget = () => {
               transition={{ duration: 0.2 }}
               className="relative z-10 text-white"
             >
-              <Sparkles className="h-8 w-8 drop-shadow-md" />
+              <Sparkles className="h-7 w-7 drop-shadow-md" />
             </motion.div>
           )}
         </AnimatePresence>
