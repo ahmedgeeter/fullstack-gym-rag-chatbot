@@ -1,4 +1,8 @@
-import { pipeline } from "@xenova/transformers";
+import { pipeline, env } from "@xenova/transformers";
+
+// Use Vercel's writable /tmp directory to avoid read-only filesystem errors
+env.cacheDir = "/tmp";
+env.allowLocalModels = false;
 
 type Embedder = (input: string, options?: Record<string, unknown>) => Promise<{ data: Float32Array }>;
 
