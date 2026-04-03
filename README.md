@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Coremont — Premium Fitness Storefront + RAG Assistant
 
-## Getting Started
+Boutique e-commerce experience for premium gym equipment, backed by a fast RAG assistant with real product data and policy knowledge.
 
-First, run the development server:
+## Highlights
+- Real product catalog with pricing, stock, and merchandising collections.
+- RAG assistant with deterministic fallbacks for pricing, delivery, warranty, and recommendations.
+- Local, curated product imagery mapped per SKU for a realistic storefront.
+- Polished, premium UI (glass chat widget, smooth interactions, responsive layout).
 
+## Problems Solved (Key Wins)
+- **Image reliability**: swapped external placeholders for curated local assets with a Pexels-powered downloader.
+- **Chat reliability**: added deterministic responses + safe fallbacks (no empty replies).
+- **Data accuracy**: catalog snapshot injected for price/name questions.
+- **Next.js 16 API fixes**: async params + error handling for collection routes.
+
+## Tech Stack
+Next.js 16 (App Router), TypeScript, Tailwind CSS, Prisma, PostgreSQL, local embeddings (Xenova), Groq for generation.
+
+## Quick Start
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run prisma:generate
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Create `.env` (not committed):
+- `DATABASE_URL`
+- `GROQ_API_KEY`
+- `PEXELS_API_KEY`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+node scripts/download-product-images.mjs --force
+npm run prisma:seed
+npm run rag:index
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Scripts
+- `npm run prisma:seed` — reset & seed catalog
+- `npm run rag:index` — rebuild knowledge embeddings
+- `node scripts/download-product-images.mjs --force` — refresh local product imagery
 
-## Learn More
+## Demo Prompts
+- “Say equipment names and prices.”
+- “What’s your delivery time and return policy?”
+- “I need a compact treadmill for home, what do you recommend?”
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Notes
+- Large outputs (`.next`, `node_modules`, `.env`) are excluded via `.gitignore`.
+- Product/collection images are optimized and under 1MB each.

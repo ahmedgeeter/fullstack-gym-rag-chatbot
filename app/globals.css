@@ -1,26 +1,97 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+  --coremont-background: #f6f3ee;
+  --coremont-surface: #ffffff;
+  --coremont-surface-muted: #f0ebe5;
+  --coremont-ink: #1c1b1a;
+  --coremont-ink-muted: #5e554d;
+  --coremont-border: #ded7cf;
+  --coremont-accent: #b9633f;
+  --coremont-accent-strong: #8f4629;
+  --coremont-accent-soft: #f2e2d7;
+  --coremont-success: #2f6b52;
+  --coremont-warning: #b26a2e;
+  --coremont-error: #b2473b;
+  --coremont-radius-sm: 6px;
+  --coremont-radius-md: 10px;
+  --coremont-radius-lg: 16px;
+  --coremont-shadow-sm: 0 1px 2px rgba(28, 27, 26, 0.08);
+  --coremont-shadow-md: 0 12px 30px rgba(28, 27, 26, 0.12);
+  --coremont-shadow-lg: 0 24px 60px rgba(28, 27, 26, 0.16);
+}
+
+.dark {
+  color-scheme: dark;
+  --coremont-background: #121111;
+  --coremont-surface: #1a1817;
+  --coremont-surface-muted: #221f1d;
+  --coremont-ink: #f2ede6;
+  --coremont-ink-muted: #b5aca3;
+  --coremont-border: #2b2724;
+  --coremont-accent: #d07a53;
+  --coremont-accent-strong: #f0a072;
+  --coremont-accent-soft: #2a211b;
+  --coremont-success: #4f8f73;
+  --coremont-warning: #d39a5f;
+  --coremont-error: #d27063;
+  --coremont-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --coremont-shadow-md: 0 12px 30px rgba(0, 0, 0, 0.35);
+  --coremont-shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.4);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--coremont-background);
+  --color-foreground: var(--coremont-ink);
+  --color-surface: var(--coremont-surface);
+  --color-surface-muted: var(--coremont-surface-muted);
+  --color-muted: var(--coremont-ink-muted);
+  --color-border: var(--coremont-border);
+  --color-accent: var(--coremont-accent);
+  --color-accent-strong: var(--coremont-accent-strong);
+  --color-accent-soft: var(--coremont-accent-soft);
+  --color-success: var(--coremont-success);
+  --color-warning: var(--coremont-warning);
+  --color-error: var(--coremont-error);
+  --radius-sm: var(--coremont-radius-sm);
+  --radius-md: var(--coremont-radius-md);
+  --radius-lg: var(--coremont-radius-lg);
+  --shadow-sm: var(--coremont-shadow-sm);
+  --shadow-md: var(--coremont-shadow-md);
+  --shadow-lg: var(--coremont-shadow-lg);
+  --font-sans: var(--font-coremont-sans);
+  --font-serif: var(--font-coremont-serif);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: var(--coremont-border);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--coremont-background);
+  color: var(--coremont-ink);
+  font-family: var(--font-coremont-sans), "Manrope", "Helvetica Neue", Arial, sans-serif;
+  text-rendering: optimizeLegibility;
+  letter-spacing: -0.01em;
+}
+
+
+.font-serif {
+  font-family: var(--font-coremont-serif), "Source Serif 4", "Times New Roman", serif;
+  letter-spacing: -0.02em;
+}
+
+::selection {
+  background: var(--coremont-accent);
+  color: #fff7f1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

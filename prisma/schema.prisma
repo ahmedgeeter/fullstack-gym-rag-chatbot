@@ -1,0 +1,398 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum StockStatus {
+  IN_STOCK
+  LOW_STOCK
+  OUT_OF_STOCK
+}
+
+enum FootprintTag {
+  COMPACT
+  MEDIUM
+  LARGE
+}
+
+enum UsageType {
+  HOME
+  STUDIO
+  COMMERCIAL
+}
+
+enum CartStatus {
+  ACTIVE
+  ORDERED
+  ABANDONED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  FULFILLED
+  CANCELLED
+  RETURNED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  REFUNDED
+}
+
+enum ShippingStatus {
+  NOT_SHIPPED
+  IN_TRANSIT
+  DELIVERED
+  RETURNED
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AddressType {
+  SHIPPING
+  BILLING
+}
+
+enum AdminRole {
+  OWNER
+  MANAGER
+  STAFF
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+}
+
+model Brand {
+  id            String    @id @default(cuid())
+  name          String
+  slug          String    @unique
+  originCountry String?
+  website       String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  products      Product[]
+}
+
+model Product {
+  id                   String                 @id @default(cuid())
+  name                 String
+  slug                 String                 @unique
+  sku                  String                 @unique
+  shortDescription     String
+  description          String
+  price                Decimal                @db.Decimal(10, 2)
+  compareAtPrice       Decimal?               @db.Decimal(10, 2)
+  currency             String                 @default("EUR")
+  featured             Boolean                @default(false)
+  status               ProductStatus          @default(ACTIVE)
+  stockStatus          StockStatus            @default(IN_STOCK)
+  originCountry        String
+  material             String
+  maxUserWeight        Int?
+  assemblyRequired     Boolean                @default(false)
+  footprintTag         FootprintTag
+  usageType            UsageType
+  lengthCm             Int?
+  widthCm              Int?
+  heightCm             Int?
+  weightKg             Decimal?               @db.Decimal(10, 2)
+  warrantyMonths       Int
+  shippingEstimateDays Int
+  tags                 String[]
+  categoryId           String
+  brandId              String
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  category             Category               @relation(fields: [categoryId], references: [id])
+  brand                Brand                  @relation(fields: [brandId], references: [id])
+  images               ProductImage[]
+  specifications       ProductSpecification[]
+  inventory            Inventory?
+  reviews              Review[]
+  collections          CollectionProduct[]
+  orderItems           OrderItem[]
+  cartItems            CartItem[]
+
+  @@index([status])
+  @@index([featured])
+  @@index([categoryId])
+  @@index([brandId])
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  url       String
+  alt       String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@index([productId])
+}
+
+model ProductSpecification {
+  id        String   @id @default(cuid())
+  productId String
+  group     String?
+  name      String
+  value     String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@index([productId])
+}
+
+model Inventory {
+  id           String   @id @default(cuid())
+  productId    String   @unique
+  stock        Int
+  reserved     Int      @default(0)
+  reorderLevel Int?
+  location     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  product      Product  @relation(fields: [productId], references: [id])
+}
+
+model Collection {
+  id           String              @id @default(cuid())
+  name         String
+  slug         String              @unique
+  description  String?
+  featured     Boolean             @default(false)
+  heroImageUrl String?
+  heroImageAlt String?
+  sortOrder    Int                 @default(0)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  products     CollectionProduct[]
+
+  @@index([featured])
+}
+
+model CollectionProduct {
+  id           String     @id @default(cuid())
+  collectionId String
+  productId    String
+  sortOrder    Int        @default(0)
+  createdAt    DateTime   @default(now())
+  collection   Collection @relation(fields: [collectionId], references: [id])
+  product      Product    @relation(fields: [productId], references: [id])
+
+  @@unique([collectionId, productId])
+  @@index([productId])
+}
+
+model Customer {
+  id        String    @id @default(cuid())
+  firstName String
+  lastName  String
+  email     String    @unique
+  phone     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  addresses Address[]
+  carts     Cart[]
+  orders    Order[]
+  reviews   Review[]
+}
+
+model Address {
+  id         String      @id @default(cuid())
+  customerId String
+  type       AddressType
+  fullName   String
+  line1      String
+  line2      String?
+  city       String
+  region     String?
+  postalCode String
+  country    String
+  phone      String?
+  isDefault  Boolean     @default(false)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  customer   Customer    @relation(fields: [customerId], references: [id])
+
+  @@index([customerId])
+}
+
+model Cart {
+  id         String     @id @default(cuid())
+  guestToken String     @unique
+  customerId String?
+  status     CartStatus @default(ACTIVE)
+  currency   String     @default("EUR")
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  items      CartItem[]
+  customer   Customer?  @relation(fields: [customerId], references: [id])
+
+  @@index([customerId])
+  @@index([status])
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  productId String
+  quantity  Int
+  unitPrice Decimal  @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  cart      Cart     @relation(fields: [cartId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@unique([cartId, productId])
+}
+
+model Order {
+  id                      String         @id @default(cuid())
+  orderNumber             String         @unique
+  customerId              String?
+  guestEmail              String?
+  status                  OrderStatus    @default(PENDING)
+  paymentStatus           PaymentStatus  @default(UNPAID)
+  shippingStatus          ShippingStatus @default(NOT_SHIPPED)
+  subtotal                Decimal        @db.Decimal(10, 2)
+  shippingTotal           Decimal        @db.Decimal(10, 2)
+  taxTotal                Decimal        @db.Decimal(10, 2)
+  discountTotal           Decimal        @db.Decimal(10, 2)
+  total                   Decimal        @db.Decimal(10, 2)
+  currency                String         @default("EUR")
+  shippingMethodId        String?
+  paymentMethodId         String?
+  placedAt                DateTime       @default(now())
+  shippingAddressSnapshot Json
+  billingAddressSnapshot  Json?
+  items                   OrderItem[]
+  customer                Customer?      @relation(fields: [customerId], references: [id])
+  shippingMethod           ShippingMethod? @relation(fields: [shippingMethodId], references: [id])
+  paymentMethod            PaymentMethod?  @relation(fields: [paymentMethodId], references: [id])
+
+  @@index([customerId])
+  @@index([status])
+}
+
+model OrderItem {
+  id              String   @id @default(cuid())
+  orderId         String
+  productId       String?
+  productName     String
+  sku             String
+  unitPrice       Decimal  @db.Decimal(10, 2)
+  quantity        Int
+  lineTotal       Decimal  @db.Decimal(10, 2)
+  productSnapshot Json
+  order           Order    @relation(fields: [orderId], references: [id])
+  product         Product? @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+}
+
+model PaymentMethod {
+  id        String   @id @default(cuid())
+  name      String
+  type      String
+  provider  String?
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ShippingMethod {
+  id        String   @id @default(cuid())
+  name      String
+  price     Decimal  @db.Decimal(10, 2)
+  etaDays   Int
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Review {
+  id         String       @id @default(cuid())
+  productId  String
+  customerId String?
+  rating     Int
+  title      String
+  content    String
+  status     ReviewStatus @default(PENDING)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  product    Product      @relation(fields: [productId], references: [id])
+  customer   Customer?    @relation(fields: [customerId], references: [id])
+
+  @@index([productId])
+  @@index([status])
+}
+
+model FAQ {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  category  String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SiteSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  role         AdminRole @default(STAFF)
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model KnowledgeDocument {
+  id        String   @id @default(cuid())
+  source    String
+  title     String
+  content   String
+  embedding Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([source])
+}
