@@ -15,7 +15,12 @@ const loadEmbedder = async () => {
 };
 
 export const embedText = async (text: string) => {
-  const embedder = await loadEmbedder();
-  const output = await embedder(text, { pooling: "mean", normalize: true });
-  return Array.from(output.data);
+  try {
+    const embedder = await loadEmbedder();
+    const output = await embedder(text, { pooling: "mean", normalize: true });
+    return Array.from(output.data);
+  } catch (err) {
+    console.error("Embedding error:", err);
+    return new Array(384).fill(0);
+  }
 };
